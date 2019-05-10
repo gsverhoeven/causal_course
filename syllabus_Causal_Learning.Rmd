@@ -1,0 +1,159 @@
+---
+title: "Syllabus Internal course on Causal Inference"
+author: "Gertjan Verhoeven"
+output: pdf_document
+---
+
+# Summary
+
+This document contains the contents of the internal course "Causal  Inference". 
+The complete course is designed to make use of free materials available online.
+It is based on learning by doing, so lots of exercises.
+
+A lot of material has been evaluated for its usefullness in this course.
+This document ends with a list of all evaluated references to various resources / papers /  tutorials.
+
+## Intro / potential outcomes
+
+### Week 1
+Study:
+We read Chapter 9 of Gelman & Hill which contains an introduction to causal inferences in the potential outcomes framework. 
+Exercise: We make the exercises 1-7.
+
+Causal assumptions: SUTVA, ignorability, exchangeability
+
+### week 2
+Exercise: Make exercises 8-14 from Gelman Ch 9.
+Datasets are in `code/ARM_Data`.
+
+## Pearl's Causal graphs
+
+### week 3
+
+We read the chapter on causal graphs by Elwert t/m  p12.
+Exercise: custom exercises 1-3.
+
+### week 4
+
+Second half of Elwert: pages 13-18 (blz 262). Rest of Elwert is optional reading.
+Exercise: custom exercises 4-7.
+
+## Estimation: (propensity score) matching
+
+### Week 5
+
+This includes (conceptually) also Inverse probability treatment weighting.
+We read Gelman Chapter 10 up to section 10.2
+Exercise: Ex 10.1 (the classic Lalonde dataset and Deheija & Wahba paper on PSM) 
+
+Concepts covered: ATT, ATE
+
+## Estimation: Regression Discontinuity Design
+
+### week 6
+We read Gelman section 10.3 and Steiner et al, graphical models for Quasi-experiment designs.
+Exercise: Ex 10.2 (simulated RDD)
+
+## Estimation: Instrumental variables
+
+### week 7
+Special course by Milan Pleus.
+We read Gelman section 10.4 and beyond.
+Exercise: Ex 10.3 and 10.4
+
+## Estimation: Heterogeneous Treatment Effects (GRF/ML)
+
+### Week 8
+Athey & Wager, BART.
+Exercises: ?
+
+Concepts covered: ICE
+
+# References / additional reading
+
+
+## By topic 
+
+* CI Overview
+    * Pearl 2009: Causal inference in statistics: An overview
+    * Pearl 2018 Book of Why
+    * Harvard: causality & misconceptions: 
+    https://www.cfa.harvard.edu/smg/Website/UCP/causal/causal_assumptions.html
+    assumptions about causal patterns that impede science learning
+
+* Potential outcomes
+    * Rubin 2005: Potential outcomes
+    * Gelman & Hill Chapter 9: Potential outcomes (Exercises!!)   
+    http://www.stat.columbia.edu/~gelman/arm/chap9.pdf
+    * Causality in Python pt 1: Potential outcomes
+
+* Graphical causal models:
+    * D-separation (http://dagitty.net: d-separation without tears)
+    * Chapter 21 Shalizi textbook "Graphical causal models"
+    * Table 2 fallacy (Westreich & Greenland 2013): mutual adjustment (http://dagitty.net)
+    * Chapter 6 ECI (interventations vs counterfactuals)
+    
+* Identifying causal effects using SCMs:
+    * Back-door criterion
+    * Front-door criterion
+    * Chapter 22 Shalizi textbook "Identifying causal effects"
+    * Disjunctive cause criterion (VanderWeele & Robins 2011)
+    * Elwert chapter on Graphical causal models
+    * do-calculus (Ferenc blog, BoW)
+    * Chapter 6 ECI
+    
+* Estimation: propensity scores
+    * Shalizi Chapter 23.1: Estimating Causal effects from observations
+    * Gelman Ch 10.2
+
+* Estimation: Regression discontinuity
+    * Gelman Ch 10.3
+    * Gelman & Imbens (2014): Why High-order Polynomials Should not be Used in Regression Discontinuity Designs
+
+* Estimation: Instrumental variables
+    * Shalizi Chapter 22 Identifying causal effects: Ch 22.3.3
+    * Shalizi Chapter 23.2: Estimating Causal effects from observations (2SLS)
+    * Gelman Ch 10.4
+    * Young 2017: dangers of 2SLS in 1000 IV regressions in top econ journals
+
+* Causal inference & machine learning (PM)
+    * Athey & Wagner
+    * BART (Hill 2011)
+
+
+## Exercises / practicals
+
+* Exercises on causal inference: web.abo.fi
+* Pearl, Glymour & Jewell:bayes.cs.ucla.edu chapter previews & solution manual
+* DoWhy Python library:identify estimand & estimate it
+* Causal inference with Python part 1: Potential outcomes
+* Causal inference with Python part 2: Causal Graphical models
+* Causal inference with Python part 3: Frontdoor adjustment
+
+## References
+
+* Pearl 2009: Causal inference in statistics: an overview
+* Shalizi book: Advanced data analysis from an Elementary Point of View
+* Gelman & Hill: Chapters 9 & 10
+* Textor et al: Causal Inference in Statistics: A companion for R users
+* Michael Nielsen 2012 blog on do-calculus
+* Ferenc Huszar (ML@Twitter): ML beyond curve fitting: an intro to causal inference and do-calculus
+* Paul Hunermund: various blog posts on causal inference using DAGs
+* Peters et al 2018: Elements of Causal Inference
+* Steiner, Kim, Hall & Su 2017: Graphical models for quasi-experimental designs
+
+
+* Pearl: understanding Simpon's paradox
+* Paul Bauer, (Applied) Causal Analysis (Bookdown.org)
+* Tran, Ruiz, Athey, Blei: Model criticism for Bayesian Causal Inference
+* Wang & Blei: The blessings of Multiple Causes
+
+
+
+## Not read yet
+
+* Hernan & Robbins book on Causal inference (2019)
+* Shalit & Sonntag ICML 2016 slides
+* Causal inference in statistics: A Primer Pearl, Glymour & Jewell (http://bayes.cs.ucla.edu/PRIMER/)
+
+

@@ -1,0 +1,143 @@
+---
+title: "Lalonde exploratory"
+output: html_notebook
+---
+
+Exploratory analysis of the Lalonde / Dehejia data set.
+
+```{r}
+#devtools::install_github("jjchern/lalonde")
+library(lalonde)
+library(ggplot2)
+library(tidyverse)
+
+
+```
+
+# Lalonde RCT: male participants
+
+The training program ran in 1976-1977. 
+earnings 1978 is the outcome measure.
+Ppl that enrolled before jan 1976, or were still in the program in jan 1978 were excluded.
+treat is treatment, rest is pre-treatment.
+
+```{r}
+# lalonde sample (RCT, male participants, no re74)
+#nsw
+
+table(nsw$treat)
+```
+## unadjusted score
+
+```{r}
+lmfit <- lm(re78 ~ treat, data = nsw)
+
+summary(lmfit)
+```
+
+## adjusted score
+
+```{r}
+lmfit <- lm(re78 ~ treat +  age + I(age^2) + education + black +
+              hispanic + married + nodegree +  re75, data = df)
+
+summary(lmfit)
+```
+We estimate treatment effect at +1636 dollar.
+Uncertainty is large! Low power.
+
+```{r}
+ggplot(nsw, aes(x= education, y = re78, group = factor(treat), col = factor(treat))) +
+  geom_point() + geom_smooth()
+```
+
+# Dehejia-Wahba RCT + RE74
+
+Added 1974 earnings, subset on obs with this var.
+
+## unadjusted score
+
+
+```{r}
+# Dehejia-Wahba Sample (male participants, with re74 --> reduces #obs)
+table(nsw_dw$treat)
+```
+
+```{r}
+lmfit <- lm(re78 ~ treat, data = nsw_dw)
+
+summary(lmfit)
+```
+The so-called "Benchmark unbiased treatment effect" is $1794.
+
+Dehejia & Wahba show that it is possible to get close to this number using observational data & propensity scores.
+
+## adjusted
+
+```{r}
+lmfit <- lm(re78 ~ treat +  age + I(age^2) + education + black +
+              hispanic + married + nodegree +  re74 + re75, data = nsw_dw)
+
+summary(lmfit)
+```
+
+Adjusted treatment effect: +1676 dollar.
+Apparently the adjusters do not add precision.
+
+# Propensity scores
+
+For the constructed dataset, we calculate the propensity score.
+
+```{r}
+df_constr <- lalonde::nsw_dw %>% 
+    filter(treat == 1) %>% 
+    bind_rows(lalonde::cps_controls)
+```
+
+```{r}
+ps.fit.1 <- glm (treat ~ age + I(age^2) + education + black + hispanic + married + nodegree, data=df_constr, family=binomial(link="logit"))
+
+summary(ps.fit.1)
+```
+```{r}
+df_constr$pscores <- predict (ps.fit.1, type="response")
+```
+
+Probability of treatment is super low if we add a huge number of control cases.
+So whats up with that?
+We can check the model only on the treated cases?
+Check what threshold we should pick to predict "treated" for these cases?
+
+
+```{r}
+df_constr$treat_pred <- ifelse(df_constr$pscores >= 0.1, 1, 0)
+
+table(df_constr[df_constr$data_id == "Dehejia-Wahba Sample",]$treat_pred, 
+      df_constr[df_constr$data_id == "Dehejia-Wahba Sample",]$treat)
+```
+
+
+
+```{r}
+ggplot(df_constr, aes(x= age, y = pscores, group = black, col = black)) + geom_point() + geom_smooth()
+```
+
+```{r}
+df_constr %>% filter(pscores > 0.3) %>% summary()
+
+#df_constr %>% filter(pscores < 0.05) %>% summary()
+```
+
+```{r}
+df_constr <- df_constr %>% mutate(has_re74 = ifelse(re74 > 0, 1, 0)) %>%
+  mutate(has_re75 = ifelse(re75 > 0, 1, 0)) %>% 
+  mutate(has_re78 = ifelse(re78 > 0, 1, 0))
+
+```
+
+```{r}
+table(df_constr$has_re74, df_constr$has_re75)
+table(df_constr$has_re74, df_constr$has_re78)
+table(df_constr$has_re75, df_constr$has_re78)
+```
+

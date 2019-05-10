@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Gertjan Verhoeven" />
+  <title>Designing an introductory course to Causal Inference</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header>
+<h1 class="title">Designing an introductory course to Causal Inference</h1>
+<p class="author">Gertjan Verhoeven</p>
+</header>
+<h1 id="introduction">Introduction</h1>
+<p>(Short intro) This is me learning causal inference (CI) by self-study together with colleagues using online resources.</p>
+<p>(Longer intro) A modern data scientist needs to become skilled in at least three topics (I left out visualization):</p>
+<ul>
+<li>(Bayesian) Statistical modeling</li>
+<li>Machine Learning</li>
+<li>Causal inference</li>
+</ul>
+<p>For the first two topics, great introductory books exist that</p>
+<ul>
+<li>focus on learning-by-doing and</li>
+<li>are low on math and high on simulation / programming in R</li>
+<li>are fun / well written</li>
+</ul>
+<p>For Bayesian statistical modeling, we have the awesome textbook <a href="https://xcelab.net/rm/statistical-rethinking/">“Statistical Rethinking”</a> by Richard mcElreath.</p>
+<p>For Machine Learning, we have the (free) book <a href="http://www-bcf.usc.edu/~gareth/ISL/">“Introduction to Statistical Learning”</a> by James, Witten, Hastie &amp; Tibshirani.</p>
+<p>However, for Causal Inference, such a book does not exist yet AFAIK. Therefore, I tried to piece together a Causal Inference course based on the criteria mentioned above.</p>
+<h1 id="designing-an-introductory-causal-inference-course">Designing an introductory causal inference course</h1>
+<p>Explicit goal was to contrast/combine the causal graph (DAG) approach with what some call “Quasi-experimental designs”, i.e. the econometric causal effects toolkit (Regression Discontinuity Design, matching, instrumental variables etc).</p>
+<p>In the end, I decided to combine the two causal chapters from Gelman &amp; Hill (2007) <a href="https://statmodeling.stat.columbia.edu/2007/12/08/causal_inferenc_2/">(freely available on Gelman’s website)</a> with the introductory chapter on Causal Graphical Models by Felix Elwert <a href="https://www.ssc.wisc.edu/~felwert/causality/">(freely available on Elwert’s website)</a>.</p>
+<p>The Gelman &amp; Hill chapters already come with a set of exercises. However, for DAGs, i could not find a suitable set of exercises.</p>
+<p>So I created two R markdown notebooks with exercises in R, that make use of the <a href="http://dagitty.net/">DAGitty tool</a> , created by Johannes Textor and freely available as R package.</p>
+<p>Some exercises are taken from <a href="http://bayes.cs.ucla.edu/PRIMER/">Causal inference in statistics: A Primer</a> by Pearl, Glymour &amp; Jewell. (I probably should own this book. So I just ordered it :))</p>
+<p>All materials are available in a <a href="https://github.com/gsverhoeven/causal_course">GitHub repository</a></p>
+<h1 id="outline-of-the-course">Outline of the course</h1>
+<p>The course has four parts.</p>
+<h2 id="general-introduction">General introduction</h2>
+<p>The course starts with the first causal chapter of Gelman &amp; Hill’s book, “Causal inference using regression on the treatment variable”. This creates a first complete experience with identifying and estimating causal effects. However, there are no causal diagrams, which is unfortunate.</p>
+<h2 id="identification-of-causal-effects-using-dags">Identification of Causal effects using DAGs</h2>
+<p>Next we dive into causal identification using the causal diagram approach. For this we use the chapter “Causal Graphical Models” by Felix Elwert. Two R markdown Notebooks with exercises using Dagitty complete this part.</p>
+<h2 id="identification-and-estimation-strategies">Identification and estimation strategies</h2>
+<p>We then continue with the second causal chapter of Gelman &amp; Hill “Causal inference using more advanced models”. This covers matching, regression discontinuity design, and instrumental variables. This material is combined with a paper by Scheiner et al, that contains DAGs for these methods. In our study group DAGs greatly facilitate discussion of the various designs in classroom settings.</p>
+<h2 id="varying-treatment-effects-using-machine-learning">Varying treatment effects using Machine Learning</h2>
+<p>Finally, and this part of the course has yet to take place, is the topic of estimating heterogeneous (i.e. subgroup, or even individual) treatment effects. This covers recent developements based on (forests of) regression trees (Both bayesian (BART, Chipman &amp; mcCullough) and non-bayesian (GRF, Athey &amp; Wager).</p>
+<h1 id="looking-back-so-far">Looking back so far</h1>
+<p>The causal diagram / DAG approach is nonparametric and its purpose is to</p>
+<ul>
+<li>Make assumptions on the data generating process explicit</li>
+<li>Formalize identification of causal effects</li>
+</ul>
+<p>Thus, it is separate from, and complements statistical estimation. The distinction between identification and estimation is not so explicitly made in the Gelman &amp; Hill chapters, at least this is my impression. It would really benefit from adding DAGs, as Richard mcElreath is doing in his upcoming second edition of Statistical Rethinking.</p>
+<p>After having worked through these materials, I think reading Shalizi’s chapters on Causal Effects would be a smart move. This is part III of his book <a href="https://www.stat.cmu.edu/~cshalizi/ADAfaEPoV/">“Advanced Data Analysis from an Elementary Point of View”</a>, which is awesome in its clarity, practical remarks a.k.a. normative statements by the author, and breadth.</p>
+<p>If you have a question, would like to comment or share ideas feel free to <a href="https://gsverhoeven.github.io/#contact">contact me</a>.</p>
+</body>
+</html>

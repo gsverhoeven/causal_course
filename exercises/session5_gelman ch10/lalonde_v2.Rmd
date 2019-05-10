@@ -1,0 +1,305 @@
+---
+title: 'Gelman & Hill Ch 10 Ex 1: NSW Lalonde'
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+Exploratory analysis of the Lalonde / Dehejia data set.
+
+```{r}
+#devtools::install_github("jjchern/lalonde")
+#devtools::install_git("https://gitlab.nza.nl/GertjanV/lalonde")
+
+library(lalonde)
+library(ggplot2)
+library(tidyverse)
+library(data.table)
+
+```
+
+# Introduction
+
+Constructed observational studies: the folder lalonde contains data from an
+observational study constructed by LaLonde (1986) based on a randomized ex-
+periment that evaluated the effect on earnings of a job training program called
+National Supported Work. The constructed observational study was formed by
+replacing the randomized control group with a comparison group formed using
+data from two national public-use surveys: the Current Population Survey (CPS)
+and the Panel Study in Income Dynamics.
+
+The training program ran in 1976-1977. 
+earnings 1978 is the outcome measure.
+Ppl that enrolled before jan 1976, or were still in the program in jan 1978 were excluded.
+treat is treatment, rest is pre-treatment.
+
+Dehejia and Wahba (1999) used a subsample of these data to evaluate the po-
+tential efficacy of propensity score matching. The subsample they chose removes
+men for whom only one pre-treatment measure of earnings is observed. (There is
+substantial evidence in the economics literature that controlling for earnings from
+only one pre-treatment period is insufficient to satisfy ignorability.) This exercise
+replicates some of Dehejia and Wahbas findings based on the CPS comparison
+group.
+
+# Exercise
+
+(a) Estimate the treatment effect from the experimental data in two ways: (i)
+a simple difference in means between treated and control units, and (ii) a
+regression-adjusted estimate (that is, a regression of outcomes on the treat-
+ment indicator as well as predictors corresponding to the pre-treatment char-
+acteristics measured in the study).
+
+# Lalonde RCT: male participants
+
+```{r}
+# lalonde sample (RCT, male participants, no re74)
+#nsw
+
+table(nsw$treat)
+```
+
+```{r}
+nsw <-data.table(nsw)
+nsw[, .(mean(re78)), .(treat)]
+```
+
+Difference of ~ $800.
+
+## Regression, unadjusted score
+
+```{r}
+lmfit <- lm(re78 ~ treat, data = nsw)
+
+summary(lmfit)
+```
+
+Compare with Dehejia Table 2. Perfect match.
+
+## Regression: adjusted score
+
+```{r}
+lmfit <- lm(re78 ~ treat +  age + I(age^2) + education + black +
+              hispanic + nodegree, data = nsw)
+
+summary(lmfit)
+```
+We estimate treatment effect at +798 dollar.
+Significant at 10% level.
+Uncertainty is large! Low power.
+
+Compare with Table 2. Exact match.
+
+# Dehejia-Wahba RCT + subset RE74
+
+Added 1974 earnings, subset on obs with this var.
+
+## unadjusted score
+
+
+```{r}
+# Dehejia-Wahba Sample (male participants, with re74 --> reduces #obs)
+table(nsw_dw$treat)
+```
+
+```{r}
+lmfit <- lm(re78 ~ treat, data = nsw_dw)
+
+summary(lmfit)
+```
+The so-called "Benchmark unbiased treatment effect" is $1794.
+
+Dehejia & Wahba show that it is possible to get close to this number using observational data & propensity scores.
+
+## adjusted
+
+```{r}
+lmfit <- lm(re78 ~ treat +  age + I(age^2) + education + black +
+              hispanic + nodegree +  re74, data = nsw_dw)
+
+summary(lmfit)
+```
+
+Adjusted RCT treatment effect on re74 subset: +1688 dollar.
+Apparently the adjusters do not add precision.
+The sample is already pretty well balanced.
+
+# Regression on constructed dataset
+
+(b) Now use a regression analysis to estimate the causal effect from Dehejia and
+Wahba s subset of the constructed observational study. Examine the sensitiv-
+ity of the model to model specification (for instance, by excluding the em-
+ployed indicator variables or by including interactions). How close are these
+estimates to the experimental benchmark?
+
+Create dataset using CPS controls.
+
+```{r}
+df_constr <- lalonde::nsw_dw %>% 
+    filter(treat == 1) %>% 
+    bind_rows(lalonde::cps_controls)
+```
+
+## CHeck whats up with all these zero earnings
+
+```{r}
+df_constr <- df_constr %>% mutate(has_re74 = ifelse(re74 > 0, 1, 0)) %>%
+  mutate(has_re75 = ifelse(re75 > 0, 1, 0)) %>% 
+  mutate(has_re78 = ifelse(re78 > 0, 1, 0))
+
+```
+
+```{r}
+table(df_constr$has_re74, df_constr$has_re75)
+table(df_constr$has_re74, df_constr$has_re78)
+table(df_constr$has_re75, df_constr$has_re78)
+```
+
+## Run regression to est treatment
+
+```{r}
+glm.fit <- glm (re78 ~ treat + age + I(age^2) + education + black + hispanic + married + nodegree + re74 + re75, data=df_constr)
+
+summary(glm.fit)
+
+glm.fit2 <- glm (re78 ~ treat + age + I(age^2) + education + black + hispanic + married + nodegree, data=df_constr)
+
+summary(glm.fit2)
+```
+
+We also get a treatment effect of $800.
+Ouch! If we leave out the re74 and re75 we get a negative treatment effect of $-3400
+So very sensitive.
+
+# Propensity scores on constructed dataset
+
+(c) Now estimate the causal effect from the Dehejia and Wahba subset using
+propensity score matching. Do this by first trying several different specifica-
+tions for the propensity score model and choosing the one that you judge to
+yield the best balance on the most important covariates.
+Perform this propensity score modeling without looking at the estimated treat-
+ment effect that would arise from each of the resulting matching procedures.
+For the matched dataset you construct using your preferred model, report
+the estimated treatment effects using the differrence-in-means and regression-
+adjusted methods described in part (a) of this exercise. How close are these
+estimates to the experimental benchmark (about $1800)?
+
+
+Fit Propensity score model.
+
+```{r}
+ps.fit.1 <- glm (treat ~ age + I(age^2) + education + black + hispanic + married + nodegree + re74 + re75, data=df_constr, family=binomial(link="logit"))
+
+summary(ps.fit.1)
+```
+```{r}
+df_constr$pscores <- predict (ps.fit.1, type="response")
+```
+
+Check if we can predict treatment for the RCT treated obs.
+This is of course a bit weird, because we have added a bunch of ctrl obs, that CAN be similar, but are not treated. So this lowers the probability of treatment.
+
+```{r}
+df_constr$treat_pred <- ifelse(df_constr$pscores >= 0.5, 1, 0)
+
+table(df_constr[df_constr$data_id == "Dehejia-Wahba Sample",]$treat_pred, 
+      df_constr[df_constr$data_id == "Dehejia-Wahba Sample",]$treat)
+```
+
+So what matters is not the absolute prob of treatment (because this depends on the amount and type of control observations) but to match to make sure that a treat and obs data point have THE SAME relative prob of treatment.
+
+
+# Matching
+
+Use propensity scores to create a matched control group.
+For each treatment obs, pick closest control obs based on pscore.
+
+Compare matching algorithms. Simple function of Gelman vs Sekhon package.
+
+```{r}
+library(arm)
+matches <- matching (z=df_constr$treat, score=df_constr$pscores)
+matched <- df_constr[matches$matched,]
+matched <- data.table(matched)
+```
+
+```{r}
+#do greedy matching on logit(PS) using Match with a caliper
+library(Matching)
+
+psmatch<-Match(Tr = df_constr$treat,M=1, X = df_constr$pscores, 
+               replace = FALSE, caliper = .2)
+
+matched2 <- df_constr[unlist(psmatch[c("index.treated","index.control")]), ]
+
+matched2 <- data.table(matched2)
+```
+
+Sekhon package appears better.
+
+# Plot standardized differences in mean values between treat and control
+
+From PC Austin (2009): Standardized differences are increasingly being used to compare balance in baseline covariates between treated and untreated subjects in the propensity-score matched sample. A limitation to their use is lack of consensus as to what value of a standardized difference denotes important residual imbalance between treated and untreated subjects in the matched sample. While there is no clear consensus on this issue, some researchers have proposed that a standardized difference of 0.1 (10 per cent) denotes meaningful imbalance in the baseline covariate
+
+```{r}
+# this assumes a treatment variable called "treat", and performs the calculation on ALL variables not in "idvars"
+calc_abs_std_difference <- function(df, idvars){
+  df <- data.table(df)
+  mdf <- melt(df, id.vars = idvars)
+  # for each variable, calc mean & sd by treat
+  res <- mdf[, .(mu = mean(value), sd = sd(value)), .(treat, variable)]
+  setnames(res, "variable", "covariate")
+  mres <- melt(res, id.vars = c("treat", "covariate"))
+  
+  res <- dcast(mres, covariate ~ variable + treat)
+  # calc abs std difference between treated / not treated for each variable
+  res <- res[, std_diff := abs((mu_0 - mu_1)/sqrt(0.5*(sd_0^2 + sd_1^2)))]
+  
+  return(res[, .(covariate, std_diff, mu_0, mu_1)])
+}
+
+res <- calc_abs_std_difference(matched2, idvars = c("data_id", "treat"))
+res$type <- "after_match"
+res2 <- calc_abs_std_difference(df_constr, idvars = c("data_id", "treat"))
+res2$type <- "before_match"
+res3 <- calc_abs_std_difference(nsw, idvars = c("data_id", "treat"))
+res3$type <- "nsw"
+
+res <- rbind(res, res2, res3)
+
+sel_vec <- c("age"    ,    "education",  "black"  ,    "hispanic"  , "married"   , "nodegree" ,       "re75" , "re74" )
+
+ggplot(res[covariate %in% sel_vec], aes(x = covariate, y = std_diff, col = type, group = type)) +
+  geom_point(size = 3) + coord_flip() + geom_hline(yintercept = 0.1, col = "black")
+
+```
+
+# Calculate sample means
+
+```{r}
+matched2[, mean(re78), .(treat)]
+
+matched[, mean(re78), .(treat)]
+```
+
+
+# Fit model on matched data
+
+```{r}
+lmfit <- lm(re78 ~ treat +  age + I(age^2) + education + black +
+              hispanic + married + nodegree +  re74 + re75, data = matched)
+
+summary(lmfit)
+```
+
+
+(d) Assuming that the estimates from (b) and (c) can be interpreted causally,
+what causal effect does each estimate? (Hint: what populations are we making
+inferences about for each of these estimates?)
+
+(e) Redo both the regression and the matching exercises, excluding the variable
+for earnings in 1974 (two time periods before the start of this study). How im-
+portant does the earnings-in-1974 variable appear to be in terms of satisfying
+the ignorability assumption?
+
+PM Do this manually.
+
