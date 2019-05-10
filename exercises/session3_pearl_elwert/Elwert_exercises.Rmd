@@ -11,7 +11,7 @@ library(ggplot2)
 library(data.table)
 ```
 
-This is about learning graph-fu. Wax on, wax of, daniel san.
+This is about learning graph-fu. Wax on, wax off, daniel san.
 
 
 # Exercise 1: DAG Terminology 
