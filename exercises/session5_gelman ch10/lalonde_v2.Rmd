@@ -8,46 +8,35 @@ output:
 Exploratory analysis of the Lalonde / Dehejia data set.
 
 ```{r}
-#devtools::install_github("jjchern/lalonde")
-#devtools::install_git("https://gitlab.nza.nl/GertjanV/lalonde")
+library(tidyverse)
+
+#pak::pak("jjchern/lalonde")
 
 library(lalonde)
-library(ggplot2)
-library(tidyverse)
-library(data.table)
 
 ```
 
 # Introduction
 
-Constructed observational studies: the folder lalonde contains data from an
-observational study constructed by LaLonde (1986) based on a randomized ex-
-periment that evaluated the effect on earnings of a job training program called
-National Supported Work. The constructed observational study was formed by
-replacing the randomized control group with a comparison group formed using
-data from two national public-use surveys: the Current Population Survey (CPS)
-and the Panel Study in Income Dynamics.
+Constructed observational studies: the folder lalonde contains data from an observational study constructed by LaLonde (1986) based on a randomized experiment (RCT) that evaluated the effect on earnings of a job training program called **National Supported Work**. 
 
-The training program ran in 1976-1977. 
-earnings 1978 is the outcome measure.
-Ppl that enrolled before jan 1976, or were still in the program in jan 1978 were excluded.
-treat is treatment, rest is pre-treatment.
+The constructed observational study was formed by replacing the randomized control group with a comparison group formed using
+data from two national public-use surveys: the Current Population Survey (CPS) and the Panel Study in Income Dynamics (PSID).
 
-Dehejia and Wahba (1999) used a subsample of these data to evaluate the po-
-tential efficacy of propensity score matching. The subsample they chose removes
-men for whom only one pre-treatment measure of earnings is observed. (There is
-substantial evidence in the economics literature that controlling for earnings from
-only one pre-treatment period is insufficient to satisfy ignorability.) This exercise
-replicates some of Dehejia and Wahbas findings based on the CPS comparison
-group.
+The training program ran in 1976-1977. **earnings1978** is the outcome measure. Ppl that enrolled before jan 1976, or were still in the program in jan 1978 were excluded. **treat** is treatment, rest is pre-treatment.
+
+```{r}
+df <- lalonde::nsw
+ dim(df)
+```
+
+
+Dehejia and Wahba (1999) used a subsample of these data to evaluate the potential efficacy of propensity score matching (PSM). The subsample they chose removes men for whom only one pre-treatment measure of earnings is observed. (There is substantial evidence in the economics literature that controlling for earnings from only one pre-treatment period is insufficient to satisfy ignorability.) This exercise replicates some of Dehejia and Wahbas findings based on the CPS comparison group.
 
 # Exercise
 
 (a) Estimate the treatment effect from the experimental data in two ways: (i)
-a simple difference in means between treated and control units, and (ii) a
-regression-adjusted estimate (that is, a regression of outcomes on the treat-
-ment indicator as well as predictors corresponding to the pre-treatment char-
-acteristics measured in the study).
+a simple difference in means between treated and control units, and (ii) a regression-adjusted estimate (that is, a regression of outcomes on the treatment indicator as well as predictors corresponding to the pre-treatment characteristics measured in the study).
 
 # Lalonde RCT: male participants
 
@@ -59,11 +48,20 @@ table(nsw$treat)
 ```
 
 ```{r}
-nsw <-data.table(nsw)
-nsw[, .(mean(re78)), .(treat)]
+df %>% 
+  group_by(treat) %>%
+  summarise(mean(re78), n_obs = n())
 ```
 
-Difference of ~ $800.
+Difference of ~ $800. Table 3. Male NSW.
+
+```{r}
+ggplot(df, aes(x = re78)) +
+  geom_histogram() +
+  facet_wrap(~ treat, ncol = 1, scales = "free_y")
+    
+```
+
 
 ## Regression, unadjusted score
 
@@ -303,3 +301,23 @@ the ignorability assumption?
 
 PM Do this manually.
 
+
+# Data and Source
+
+## NSW Data Files (Lalonde Sample)
+lalonde::nsw
+These files contain the treated and control units from the male sub-sample from the National Supported Work Demonstration as used by Lalonde in his paper.
+
+## NSW Data Files (Dehejia-Wahha Sample)
+lalonde::nsw_dw
+Based on pre-intervention variables, Dehejia-Wahha extract a further subset of Lalonde’s NSW experimental data, a subset containing information on RE74 (earnings in 1974).
+
+* Non-experimental Comparison Data Files:
+lalonde::psid_controls
+lalonde::psid_controls2
+lalonde::psid_controls3
+lalonde::cps_controls
+lalonde::cps_controls2
+lalonde::cps_controls3
+
+All the datasets are available in txt and dta format from Dehejia’s website
