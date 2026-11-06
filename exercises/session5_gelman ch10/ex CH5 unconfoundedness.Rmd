@@ -1,0 +1,68 @@
+---
+title: "Matching Exercise"
+date: "2026-11-06"
+---
+
+
+# Matching exercise
+
+Effect of NSW program on 1978 earnings of male participants.
+
+The dataset has several variables for each participant.
+
+```{r}
+summary(lm(re78 ~ treat + black + education + married + hispanic , data = nsw ))
+```
+
+based on your interviews with the designers of the experiment, you discover that four strata were created, before being used to randomize treatment. 
+
+The strata were formed based on: 
+
+* being a person of color yes or no (1/0, variable "black"), 
+* as well as not having at least 10 years of education (in the 1970s secondary education was mandatory until age of 16) (1/0, variable "hi_edu"). 
+
+This creates four strata in the data.
+
+```{r}
+library(tidyverse)
+library(lalonde)
+
+dfstrat <- nsw %>%
+  mutate(hi_edu= if_else(education >= 10, 1, 0)) %>%
+  select(black, hi_edu, treat, re78)
+```
+
+
+# Method 1: subclassification 
+
+a) calculate both the ATE and the ATT using the subclassification method.
+
+```{r}
+# your answer here
+```
+
+
+# Method 2: matching
+
+b) calculate the ATE and the ATT using exact matching.
+
+```{r}
+# your answer here
+```
+
+# Method 3: nearest neighbour matching
+
+Then later on, from one of the participants you learn that "age"  also played a role in treatment assignment. 
+Luckily, you also have data on the age of participants.
+
+We are now assuming that treatment was random given a persons age, that person being a person of color, and whether that person had finished high school.
+
+c) Can you still use the subclassification method? Do all strata have common support?
+
+d) calculate the ATE using Nearest neigbour matching. Try all three distance measures in the book, i.e. Euclidean distance, Normalized euclidean distance and Mahalanobis distance.
+
+Tip: `nmatch2.R` has example R code for NN distance matching, you can adapt this code. Alternative is the R package `Matching`, which implements NN distance matching, as well as other matching methods.
+
+```{r}
+# your answer here
+```
