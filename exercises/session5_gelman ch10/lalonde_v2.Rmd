@@ -1,8 +1,5 @@
 ---
 title: 'Gelman & Hill Ch 10 Ex 1: NSW Lalonde'
-output:
-  pdf_document: default
-  html_notebook: default
 ---
 
 Exploratory analysis of the Lalonde / Dehejia data set.
@@ -10,7 +7,7 @@ Exploratory analysis of the Lalonde / Dehejia data set.
 ```{r}
 library(tidyverse)
 
-#pak::pak("jjchern/lalonde")
+pak::pak("jjchern/lalonde")
 
 library(lalonde)
 
@@ -321,3 +318,56 @@ lalonde::cps_controls2
 lalonde::cps_controls3
 
 All the datasets are available in txt and dta format from Dehejia’s website
+
+
+
+
+a) Check relationship between outcome (re78) and education.
+
+```{r}
+ggplot(nsw, aes(x= education, y = re78, col = factor(treat))) +
+  geom_point() + geom_smooth()
+```
+Looks like having more than 12 years of education has effect on earnings.
+
+```{r}
+dfstrat <- nsw %>%
+  mutate(hi_edu= if_else(education > 10, 1, 0))
+
+dfstrat %>%
+  group_by(black, hi_edu, treat) %>%
+  summarise(avg_earnings = mean(re78),
+            sd_earnings = sd(re78),
+            n_obs = n()
+            )
+  
+```
+
+
+
+
+
+
+```{r}
+library(tidyverse)
+library(lalonde)
+df <- nsw
+dfl <- df %>% select(-data_id) %>% pivot_longer(cols = age:re78, names_to = "varname")
+
+
+res <- dfl %>% 
+  group_by(treat, varname) %>%
+  summarise(avg = mean(value),
+            sd = sd(value),
+            min = min(value),
+            max = max(value),
+            n_rec = n())
+
+res <- res %>%
+  mutate(perc = if_else(max == 1, 1, 0)) %>%
+  mutate(avg = if_else(perc ==1, avg*100, avg))
+
+ggplot(res %>% filter(!(varname %in% c("re75", "re78"))), aes(x = varname, y = avg, col = factor(treat))) +
+  geom_point() + coord_flip()
+
+```
